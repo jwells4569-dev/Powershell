@@ -15,11 +15,11 @@ Write-Host $Alerts
 #SendMail to each alias
 Foreach ($Alert in $Alerts){
     $Machine = $Alert.Machine
-    $Open = $Alert.ResolutionState
-    $Sev = $Alert.Severity
+    #$Open = $Alert.ResolutionState       #Remarked out until needed
+    #$Sev = $Alert.Severity               #Remarked out until needed
     $Time = $Alert.TimeRaised
     $Title = $Alert.AlertStringName
-    $Description = $Alert.AlertStringDescription
+    #$Description = $Alert.AlertStringDescription      #Remarked out until needed
 
     $EmailBody = @"
 
