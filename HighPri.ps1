@@ -1,5 +1,5 @@
 ﻿#PA Ticketing Alias
-$Alias = "DLIPAAll@microsoft.com"
+$Alias = "tcktpascom@microsoft.com"
 
 #Get Date
 $Date = get-date -format 'yyyy-MM-dd'
@@ -9,31 +9,39 @@ $ExchangeServer = "CoreSMTP.corp.microsoft.com"
 $FromAddress = "DLIPAAll@microsoft.com"
 
 #Import from CSV
-$Alerts = Import-CSV -Path HighPriScom.csv
-Write-Host $Alerts
+$Alerts = Import-CSV -Path C:\HighPriScom.csv
+#Write-Host $Alerts
 
 #SendMail to each alias
 Foreach ($Alert in $Alerts){
     $Machine = $Alert.Machine
-    #$Open = $Alert.ResolutionState       #Remarked out until needed
-    #$Sev = $Alert.Severity               #Remarked out until needed
+    $Open = $Alert.ResolutionState
     $Time = $Alert.TimeRaised
     $Title = $Alert.AlertStringName
-    #$Description = $Alert.AlertStringDescription      #Remarked out until needed
+    $Description = $Alert.AlertStringDescription
+    $Repeat = $Alert.RepeatCount
 
     $EmailBody = @"
+    
+    
+    @$Alias<br>
+    <br>
+  
+    The following machine <font color="red"><b>[$Machine]</b></font> has generated a critical <font color="red"><b>[$Title]</b></font> Alert at the following time <font color="red"><b>[$Time]</b></font>.<br>
+    Please take immediate action to view the SCOM alert on the <a href="http://pascomconsole.redmond.corp.microsoft.com/OperationsManager/default.aspx?ViewType=AlertView&ViewID=8db1f5a7-f3f3-2646-6c6b-e34672f7ed98">Web Console</a> and take steps to remediate.<br>  
+    This machine has generated this alert <font color="red"><b>[$Repeat]</b></font> times<br>
+    <br>
+    Thank you for your attention,<br>
+    <br>
+    SCOM Alerts System<br>
 
-    $Alias,
+    <p><small>For issues with this mail contact v-jawel@microsoft.com</small></p>
+    <p><small>Version 1.0</small></p>
 
-    The following machine $Machine has generated a critical $Title Alert at the following time $Time.  Please take immediate action to view the SCOM alert on the web console and take steps to remediate. 
-
-    Thank you for your attention,
-
-    SCOM Alerts System
 
 "@
 
     Write-Host "Sending Ticket to $Alias for $Machine" -ForegroundColor Green
-    Send-MailMessage -to $Alias -bcc v-brians@microsoft.com -subject "SCOM Alert $Date" -Body $EmailBody -Priority High -SmtpServer $ExchangeServer -Port 25 -From $FromAddress
+    Send-MailMessage -to $Alias -bcc v-jawel@microsoft.com, v-cadams@microsoft.com -subject "SCOM Alert for $Machine, $Title, $Date" -BodyAsHtml -Body $EmailBody -Priority High -SmtpServer $ExchangeServer -Port 25 -From $FromAddress
 
 }
