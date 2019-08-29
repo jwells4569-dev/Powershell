@@ -15,10 +15,10 @@ $Alerts = Import-CSV -Path C:\HighPriScom.csv
 #SendMail to each alias
 Foreach ($Alert in $Alerts){
     $Machine = $Alert.Machine
-    $Open = $Alert.ResolutionState
+    #$Open = $Alert.ResolutionState
     $Time = $Alert.TimeRaised
     $Title = $Alert.AlertStringName
-    $Description = $Alert.AlertStringDescription
+    #$Description = $Alert.AlertStringDescription
     $Repeat = $Alert.RepeatCount
 
     $EmailBody = @"
