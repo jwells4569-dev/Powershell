@@ -19,3 +19,4 @@ or dbo.AlertView.AlertStringName Like '%processor%'
 or dbo.AlertView.AlertStringName Like '%block%'
 or dbo.AlertView.AlertStringName Like '%battery%'
 or dbo.AlertView.AlertStringName Like '%heartbeat%'
+Order by Machine
