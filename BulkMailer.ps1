@@ -6,7 +6,7 @@ $ExchangeServer = "CoreSMTP.corp.microsoft.com"
 $FromAddress = "v-jawel@microsoft.com"
 
 #Import from CSV
-$Users = Import-CSV -Path MailList.csv
+$Users = Import-CSV MailList.CSV
 
 #SendMail to each alias
 Foreach ($User in $Users){
@@ -21,6 +21,6 @@ Foreach ($User in $Users){
 "@
 
     Write-Host "Sending Ticket to $Alias($ToAddress)" -ForegroundColor Green
-    Send-MailMessage -to $User.Email -subject "Compliance Work $Date" -Body $EmailBody -SmtpServer $ExchangeServer -Port 25 -From $FromAddress
+    Send-MailMessage -to $User.Email -subject "Compliance Work $Date" -Body $EmailBody -SmtpServer $ExchangeServer -From $FromAddress
 
 }
