@@ -14,7 +14,7 @@ $ExchangeServer = "CoreSMTP.corp.microsoft.com"
 $FromAddress = ""
 
 #Import from CSV
-#$Alerts = Import-CSV -Path "C:\Events.csv"
+$Alerts = Import-CSV -Path "C:\Events.csv"
 #Write-Host $Alerts Debugging line to read CSV
 
 #Get Date
@@ -84,7 +84,6 @@ Foreach ($Alert in $Alerts){
 
 ######################End Send-Mail Customer########################################
 Start-Sleep [60]
-
 ######################Send-Mail OPS################################################
 $EmailBody2 = @"
     
