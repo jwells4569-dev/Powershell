@@ -15,6 +15,7 @@ $Alerts = Import-CSV -Path C:\HighPriScom.csv
 #SendMail to each alias
 Foreach ($Alert in $Alerts){
     $Machine = $Alert.Machine
+    $MachineName = $Alert.MachineName
     $Open = $Alert.ResolutionState
     $Time = $Alert.TimeRaised
     $Title = $Alert.AlertStringName
@@ -27,7 +28,7 @@ Foreach ($Alert in $Alerts){
     @$Alias<br>
     <br>
   
-    The following machine <font color="red"><b>[$Machine]</b></font> has generated a critical <font color="red"><b>[$Title]</b></font> Alert at the following time <font color="red"><b>[$Time]</b></font>.<br>
+    The following machine <font color="red"><b>[$MachineName]</b></font> has generated a critical <font color="red"><b>[$Title]</b></font> Alert at the following time <font color="red"><b>[$Time]</b></font>.<br>
     Please take immediate action to view the SCOM alert on the <a href="http://pascomconsole.redmond.corp.microsoft.com/OperationsManager/default.aspx?ViewType=AlertView&ViewID=8db1f5a7-f3f3-2646-6c6b-e34672f7ed98">Web Console</a> and take steps to remediate.<br>  
     This machine has generated this alert <font color="red"><b>[$Repeat]</b></font> times<br>
     <br>
@@ -41,7 +42,7 @@ Foreach ($Alert in $Alerts){
 
 "@
 
-    Write-Host "Sending Ticket to $Alias for $Machine" -ForegroundColor Green
-    Send-MailMessage -to $Alias -bcc v-jawel@microsoft.com, v-cadams@microsoft.com -subject "SCOM Alert for $Machine, $Title, $Date" -BodyAsHtml -Body $EmailBody -Priority High -SmtpServer $ExchangeServer -Port 25 -From $FromAddress
+    Write-Host "Sending Ticket to $Alias for $MachineName" -ForegroundColor Green
+    Send-MailMessage -to $Alias -bcc v-jawel@microsoft.com, v-cadams@microsoft.com -subject "SCOM Alert for $MachineName, $Title, $Date" -BodyAsHtml -Body $EmailBody -Priority High -SmtpServer $ExchangeServer -Port 25 -From $FromAddress
 
 }

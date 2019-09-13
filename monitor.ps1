@@ -4,17 +4,18 @@
 
 #############Variables######################
 #To Alias 
-$Alias = ""
+$Alias = "tktcefun@microsoft.com"
+$Alias2 = "Andrew.Richards@microsoft.com"
 
 #Get Date
 $Date = get-date 
 
 #SMTP Server Info
 $ExchangeServer = "CoreSMTP.corp.microsoft.com"
-$FromAddress = ""
+$FromAddress = "cetkt@microsoft.com"
 
 #Import from CSV
-$Alerts = Import-CSV -Path "C:\Events.csv"
+#$Alerts = Import-CSV -Path "C:\Events.csv"
 #Write-Host $Alerts Debugging line to read CSV
 
 #Get Date
@@ -62,7 +63,7 @@ Foreach ($Alert in $Alerts){
  $EmailBody = @"
     
     
-    @$Alias<br>
+    @$Alias2<br>
     <br>
   
     The following machine <font color="red"><b>[$Computer]</b></font> has generated Event <font color="red"><b>[$EventID]</b></font> Reboot Alert at the following time <font color="red"><b>[$Date]</b></font>.<br>
@@ -78,7 +79,7 @@ Foreach ($Alert in $Alerts){
 "@
 
     #Write-Host "Sending Ticket to $Alias for $Computer" -ForegroundColor Green  Debugging to show tickets going out.
-    Send-MailMessage -to $Alias -cc "", "" -subject "Reboot Alert for $Computer, $EventID, $Date" -BodyAsHtml -Body $EmailBody -Priority High  -SmtpServer $ExchangeServer -Port 25 -From $FromAddress
+    Send-MailMessage -to $Alias2  -subject "Reboot Alert for $Computer, $EventID, $Date" -BodyAsHtml -Body $EmailBody -Priority High  -SmtpServer $ExchangeServer -Port 25 -From $FromAddress
 
 }
 
@@ -105,7 +106,7 @@ $EmailBody2 = @"
 
 Send-MailMessage -to tktcefun@microsoft.com  -subject "Reboot Alert for $Computer, $Date" -BodyAsHtml -Body $EmailBody2 -Priority High -Attachement "C:\Events.csv" -SmtpServer $ExchangeServer -Port 25 -From $FromAddress
 
-Start-Sleep [30]
+Start-Sleep [60]
 
 remove-item -path C:\Events.csv -force -ErrorAction SilentlyContinue
 
