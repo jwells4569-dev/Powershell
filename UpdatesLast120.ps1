@@ -1,4 +1,4 @@
-﻿$Hosts = Get-Content -Path 'C:\hosts.txt'
+﻿$Hosts = env:computername #Get-Content -Path 'C:\hosts.txt' 
 Invoke-Command -ComputerName $Hosts -ScriptBlock {
     Get-HotFix | Where-Object {
         $_.InstalledOn -gt ((Get-Date).AddDays(-120))
