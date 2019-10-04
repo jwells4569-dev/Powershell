@@ -1,33 +1,5 @@
 ﻿#v-jawel Powershell Module for SCOM Administration
 # 10/3/2019
-#Because I can.
-
-<# 
-
-.SYNOPSIS
-    SCOM Admin Tool for CE/PA Usage
-
-.DESCRIPTION
-    Usage:  Use for managing any SCOM instance you have access to as runas.
-    Runs from Elevated Powershell
-    Uses JIT Elevated credentials for functionality.
-    Can be configured by user choices to change settings.
-
-.Example
-
-.Notes
-    Author: J.Wells (Design Laboratory Inc)
-    Date: October 03, 2019
-
-    Ver 1.0 - Basic functionality
-
-#>
-
-#Invoke Help file
-Param(
-    [String]$Targets = "Help"  #The targets to run.
-)
-
 
 function Get-AlertsBulk {
 
