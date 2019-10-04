@@ -7,7 +7,7 @@ function Get-AlertsBulk {
 <# 
 
 .SYNOPSIS
-    SCOM Admin Tool for CE/PA Usage
+    SCOM Alert Bulk Gatherer
 
 .DESCRIPTION
     Usage:  Use for managing any SCOM instance you have access to as runas.
@@ -16,7 +16,8 @@ function Get-AlertsBulk {
     Can be configured by user choices to change settings.
 
 .Example
-
+    Help Get-AlertBulk
+    Get-AlertBulk  Self contained function
 .Notes
     Author: J.Wells (Design Laboratory Inc)
     Date: October 03, 2019
@@ -138,8 +139,6 @@ Param(
 Clear-Host;
 
 #User inputs to clear bulk alerts.  Defaults to Clearing "Failed to Connect to Computer" and "255" for Closed
-
-    Write-Host "Alert Clearing Script"
 
     $AlertName = ( ($defaultValue='Failed to Connect to Computer'), (Read-Host "Input Alert Name as Displayed [$defaultValue]")) -match '\S' | select -last 1 
 
