@@ -2,6 +2,10 @@
 # 10/3/2019
 
     Write-Host @"
+
+    Runs from Elevated Operations Manager Shell
+
+
     Use "Help" infront of command for Help/Examples.
 
     Commands:
@@ -53,6 +57,10 @@ Param(
 )
 
     Write-Host @"
+
+    Runs from Elevated Operations Manager Shell
+
+
     Use "Help" infront of command for Help/Examples.
 
     Commands:
