@@ -13,8 +13,8 @@ $servers = Get-Content -path C:\computers.txt
 #}
 foreach ($server in $servers){
 
-   # [System.Net.Dns]::GetHostByName("$server")| export-csv -path C:\DNS.csv -Append -notypeinformation
-    Invoke-Command -ComputerName $Server -Command {Get-ItemProperty -Path 'HKLM:\System\ESInv'}
+    [System.Net.Dns]::GetHostByName("$server")| export-csv -path C:\DNS.csv -Append -notypeinformation
+    #Invoke-Command -ComputerName $Server -Command {Get-ItemProperty -Path 'HKLM:\System\ESInv'}
   
  } 
 

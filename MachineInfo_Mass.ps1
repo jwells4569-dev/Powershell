@@ -5,68 +5,58 @@
 ## .\MachineInfo_Mass.ps1 | Out-File -filepath C:\MachineInfo.txt -Append
 
 Clear-Host;
-$servers = Get-Content  -path C:\computers.txt 
-ForEach ($server in $servers) {
-Write-Host "Checking your system information, Please wait... " -foregroundcolor DarkRed -backgroundcolor white
+ 
+    $servers = Get-Content  -path C:\computers.txt 
+        ForEach ($server in $servers) {
 
-systeminfo /s $server | findstr /c:"Host Name" 
-systeminfo /s $server | findstr /c:"Domain" 
-Write-Output "Active Directory Operational Unit" 
-dsquery computer -name $server
-systeminfo /s $server | findstr /c:"OS Name" 
-systeminfo /s $server | findstr /c:"OS Version" 
+            Write-OutPut "Checking $server information, Please wait... " 
+            Write-Output "`n"
+            Write-Output "Host Information:" 
 
-Write-Output "Build Number/UBR" 
- (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").BuildLabEx -match '^[0-9]+\.[0-9]+' |  % { $matches.Values }
+            Invoke-Command -ComputerName $server -ScriptBlock { Get-ComputerInfo -Property "CsName","CsDomain","OsName","OsVersion","OsArchitecture","OsLanguage","OsProductType","WindowsInstallDateFromRegistry","WindowsSystemRoot" | Format-List }
 
-systeminfo /s $server | findstr /c:"System Manufacturer" 
-systeminfo /s $server | findstr /c:"System Model" 
-systeminfo /s $server | findstr /c:"System type"
+            Write-Output "Manufacturer Information:" 
 
-Write-Output "VM Host Name"
+            Invoke-Command -ComputerName $server -ScriptBlock { Get-ComputerInfo -Property "CSManufacturer","CSModel","BiosSeralNumber","BiosSMBIOSBIOSVersion" | Format-List }
 
-(get-item "HKLM:\SOFTWARE\Microsoft\Virtual Machine\Guest\Parameters").GetValue("HostName")
+            Write-Output "Memory and CPU Information:" 
 
+            Invoke-Command -ComputerName $server -ScriptBlock { Get-ComputerInfo -Property "CsProcessors","CsNumberOfProcessors","CsNumberOfLogicalProcessors","CsPhyicallyInstalledMemory" | Format-List "CsProcessors","CsNumberOfProcessors","CsNumberOfLogicalProcessors",@{label="CsPhyicallyInstalledMemory (GB)";expression={$_.CsPhyicallyInstalledMemory/1MB}}}
 
-Write-Output "Machine Administrators Group"  
+            Write-Output "VM Host Information:" 
 
-$group = get-wmiobject win32_group -ComputerName $server -Filter "LocalAccount=True AND SID='S-1-5-32-544'"
-$query = "GroupComponent = `"Win32_Group.Domain='$($group.domain)'`,Name='$($group.name)'`""
-$allAdmins = Get-WmiObject win32_groupuser -ComputerName $server -Filter $query | %{$_.PartComponent} | % {$_.substring($_.lastindexof("Domain=") + 7).replace("`",Name=`"","\")}
-
-$alladmins
-
-Write-Output "Machine IP Configuration" 
-
-$ipV4 = ping $server -4
-
-$ipv6 = ping $server -6
-
-$ipV4
-
-$ipV6
+            Invoke-Command -ComputerName $server -ScriptBlock { Get-ComputerInfo -Property "WindowsEditionId","HyperVRequirement*" }
 
 
-Write-Output "Hard Drive Information:"
+            Write-Output "Machine Administrators Group" 
 
+            $group = get-wmiobject win32_group -ComputerName $server -Filter "LocalAccount=True AND SID='S-1-5-32-544'"
+            $query = "GroupComponent = `"Win32_Group.Domain='$($group.domain)'`,Name='$($group.name)'`""
+            $allAdmins = Get-WmiObject win32_groupuser -ComputerName $server -Filter $query | %{$_.PartComponent} | % {$_.substring($_.lastindexof("Domain=") + 7).replace("`",Name=`"","\")}
 
-wmic /node:$server diskdrive get InterfaceType,name,size,model,manufacturer
+            $alladmins
 
+            Write-Output "`n"
+            Write-Output "Machine IP Configuration:" 
 
-Write-Output "CPU Information:" 
+ 
+            $ipV4 = ping $server -4
 
-wmic /node:$server cpu get Name,NumberOfCores,NumberOfLogicalProcessors
-
-systeminfo /s $server | findstr /c:"Total Physical Memory"
-Write-Output "Memory Information:" 
  
 
-wmic /node:$server MEMORYCHIP get Capacity,DeviceLocator,PartNumber,Tag
+            $ipv6 = ping $server -6
+            Write-Output "`n"
+            Write-Output "IP V4:"
+            $ipV4
+            Write-Output "`n"
+            Write-Output "IP V6:"
+            $ipV6
+
+            Write-Output "`n"
+            Write-Output "Hot Fixes Installed:"
+            Get-HotFix -ComputerName $server | Select-Object -Property Source, Description, HotFixID, InstalledBy, InstalledOn | Sort-Object -Property InstalledOn | Format-Table
+
+}
 
 
-Write-Output "Hot Fixes Installed" 
-
-get-hotfix -computername $server 
-
-} 
 

@@ -1,17 +1,19 @@
-﻿#J.M. Wells Powershell Module for SCOM Administration
+﻿#v-jawel Powershell Module for SCOM Administration
 # 10/3/2019
 
+#Modified by Jonathan Powell - Remove-MachineBulk; New logic for Uninstall-SCOMAgent loop limitations.
+
+    Clear-Host
+
     Write-Host @"
-
-    Runs from Elevated Operations Manager Shell
-
-
     Use "Help" infront of command for Help/Examples.
+
+    USE FQDN of Machine unless otherwise stated!!
 
     Commands:
     
     Get-Info
-    Get-AlertBulk
+    Get-AlertsBulk
     Get-AlertSingle
     Clear-AlertBulk
     Clear-AlertSingle
@@ -20,7 +22,8 @@
     Set-MaintenanceModeBulk
     Set-MaintenanceModeSingle
     Show-MaintenanceMode
-"@ -ForegroundColor Black -BackgroundColor White
+
+"@ -ForegroundColor Yellow -BackgroundColor Black
 
 
 
@@ -29,18 +32,20 @@ function Get-Info {
 <# 
 
 .SYNOPSIS
+    SCOM Admin Tool for CE/PA Usage
     SCOM Admin Tool Info/Help File
 .DESCRIPTION
     Usage:  Use for managing any SCOM instance you have access to as runas.
     Gives a list of all functions in module
-    Runs from Elevated Operations Manager Shell
+    Runs from Elevated Powershell
+    Uses JIT Elevated credentials for functionality.
     Can be configured by user choices to change settings.
 
 .Example
     Help Get-Info
     Get-Info  Self contained function
 .Notes
-    Author: J.M. Wells 
+    Author: J.Wells (Design Laboratory Inc)
     Date: October 03, 2019
 
     Ver 1.0 - Basic functionality
@@ -57,16 +62,14 @@ Param(
 )
 
     Write-Host @"
-
-    Runs from Elevated Operations Manager Shell
-
-
     Use "Help" infront of command for Help/Examples.
+
+    USE FQDN of Machine unless otherwise stated!!
 
     Commands:
 
     Get-Info
-    Get-AlertBulk
+    Get-AlertsBulk
     Get-AlertSingle
     Clear-AlertBulk
     Clear-AlertSingle
@@ -75,7 +78,8 @@ Param(
     Set-MaintenanceModeBulk
     Set-MaintenanceModeSingle
     Show-MaintenanceMode
-"@ -ForegroundColor Black -BackgroundColor White
+
+"@ -ForegroundColor Yellow -BackgroundColor Black
 
 }
 
@@ -87,19 +91,21 @@ function Get-AlertsBulk {
 <# 
 
 .SYNOPSIS
+    SCOM Admin Tool for CE/PA Usage
     SCOM Alert Bulk Gatherer
 
 .DESCRIPTION
     Usage:  Use for managing any SCOM instance you have access to as runas.
     Gets All updates from User Specified time Period.
-    Runs from Elevated Operations Manager Shell
+    Runs from Elevated Powershell
+    Uses JIT Elevated credentials for functionality.
     Can be configured by user choices to change settings.
 
 .Example
     Help Get-AlertBulk
     Get-AlertBulk  Self contained function
 .Notes
-    Author: J.M. Wells 
+    Author: J.Wells (Design Laboratory Inc)
     Date: October 03, 2019
 
     Ver 1.0 - Basic functionality
@@ -146,19 +152,21 @@ function Get-AlertSingle {
 <# 
 
 .SYNOPSIS
-    SCOM Admin Tool Get-AlertSingle 
+    SCOM Admin Tool for CE/PA Usage
+    Get-AlertSingle 
 
 .DESCRIPTION
     Usage:  Use for managing any SCOM instance you have access to as runas.
     Gathers All Alerts for a Single SCOM monitored Machine.
-    Runs from Elevated Operations Manager Shell
+    Runs from Elevated Powershell
+    Uses JIT Elevated credentials for functionality.
     Can be configured by user choices to change settings.
 
 .Example
     Help Get-AlertSingle
     Get-AlertSingle  Self contained function
 .Notes
-    Author: J.M. Wells 
+    Author: J.Wells (Design Laboratory Inc)
     Date: October 03, 2019
 
     Ver 1.0 - Basic functionality
@@ -196,19 +204,21 @@ function Clear-AlertBulk {
 <# 
 
 .SYNOPSIS
-    SCOM Admin Tool Clear-AlertBulk
+    SCOM Admin Tool for CE/PA Usage
+    Clear-AlertBulk
 
 .DESCRIPTION
     Usage:  Use for managing any SCOM instance you have access to as runas.
     Clears All Alerts of a specific type 
-    Runs from Elevated Operations Manager Shell
+    Runs from Elevated Powershell
+    Uses JIT Elevated credentials for functionality.
     Can be configured by user choices to change settings.
 
 .Example
     Help Clear-AlertBulk
     Clear-AlertBulk self contained function
 .Notes
-    Author: J.M. Wells 
+    Author: J.Wells (Design Laboratory Inc)
     Date: October 03, 2019
 
     Ver 1.0 - Basic functionality
@@ -231,8 +241,8 @@ Param(
 
 
     ##Clear the Alert
-
-    Get-SCOMAlert -Name "$AlertName" | Set-SCOMAlert -ResolutionState $ResolutionState -Owner "$Owner"
+    Write-Host "Clearing Selected Alert..." -ForegroundColor Yellow -BackgroundColor Black
+    Get-SCOMAlert -Name "$AlertName" | Set-SCOMAlert -ResolutionState $ResolutionState -Owner "$Owner" -Verbose
 }
 
 
@@ -244,19 +254,21 @@ function Clear-AlertSingle {
 <# 
 
 .SYNOPSIS
-    SCOM Admin Tool Clear-AlertSingle
+    SCOM Admin Tool for CE/PA Usage
+    Clear-AlertSingle
 
 .DESCRIPTION
     Usage:  Use for managing any SCOM instance you have access to as runas.
     Clears a specific alert for a specific machine
-    Runs from Elevated Operations Manager Shell
+    Runs from Elevated Powershell
+    Uses JIT Elevated credentials for functionality.
     Can be configured by user choices to change settings.
 
 .Example
     Help Clear-AlertSingle
     Clear-AlertSingle self contained function
 .Notes
-    Author: J.M. Wells 
+    Author: J.Wells (Design Laboratory Inc)
     Date: October 03, 2019
 
     Ver 1.0 - Basic functionality
@@ -282,7 +294,8 @@ Param(
     $Owner = ( ($defaultValue='Powershell User'), (Read-Host "Input Alias for Ownership [$defaultValue]")) -match '\S' | select -last 1 
 
     ##Clear the Alert By Machine Name and Alert Name
-    Get-SCOMAlert -criteria "MonitoringObjectDisplayName = '$CompName' and Name = '$AlertName'" | Set-SCOMAlert -ResolutionState $ResolutionState -Owner "$Owner"
+    Write-Host "Clearing Selected Alert..." -ForegroundColor Yellow -BackgroundColor Black
+    Get-SCOMAlert -criteria "MonitoringObjectDisplayName = '$CompName' and Name = '$AlertName'" | Set-SCOMAlert -ResolutionState $ResolutionState -Owner "$Owner" -Verbose
 
 }
 
@@ -296,22 +309,27 @@ function Remove-MachineBulk {
 <# 
 
 .SYNOPSIS
-    SCOM Admin Tool RemoveMachineBulk
+    SCOM Admin Tool for CE/PA Usage
+    RemoveMachineBulk
 
 .DESCRIPTION
     Usage:  Use for managing any SCOM instance you have access to as runas.
     Removes machines in bulk from Instance using TXT files
-    Runs from Elevated Operations Manager Shell
+    Runs from Elevated Powershell
+    Uses JIT Elevated credentials for functionality.
     Can be configured by user choices to change settings.
 
 .Example
     Help RemoveMachineBulk
     RemoveMachineBulk self contained function
 .Notes
-    Author: J.M. Wells 
+    Author: J.Wells (Design Laboratory Inc) Original concept and code
+    Modified by: Jonathan Powell (Design Laboratory Inc) New logic to work around Uninstall-SCOMAgent loop limitations
+            Many Thanks Jonathan!
     Date: October 03, 2019
 
     Ver 1.0 - Basic functionality
+    Ver 1.1 - Assistance from Jonathan Powell for Uninstall-SCOMAgent Loop issues.
 
 #>
 
@@ -320,25 +338,42 @@ Param(
     [String]$Targets = "Help"  #The targets to run.
 )
 
+$Path = ( ($defaultValue='C:\Computers.txt'), (Read-Host "Input Path and File Name [$defaultValue]")) -match '\S' | select-object -last 1
+$Credentials = Get-Credential -Message "Please enter credentials for SCOM interaction"
+$Iteration = 0
+$TargetList = Get-Content $Path
 
-
-
-
-#Remove Machines from SCOM Instance.  Uses TXT file to pass machines (FQDN) to loop. Requires runas credentials
-
-
-
-    $Path = ( ($defaultValue='C:\Computers.txt'), (Read-Host "Input Path and File Name [$defaultValue]")) -match '\S' | select -last 1
-
-
-    $servers = Get-Content  -path "$Path"
-
-    ForEach ($server in $servers) 
+Foreach ($Target in $TargetList)
+{
+    Write-Host "Attempting to detect SCOM agent on $Target..." -ForegroundColor Yellow -BackgroundColor Black
+    $Agent = $null
+    $Agent = Get-SCOMAgent -DNSHostName "$Target" # This returns null when there is no client detected
+    if ($null -ne $Agent)
     {
-
-    $Agent = Get-SCOMAgent -DNSHostName "$server"
-    Uninstall-SCOMAgent -Agent $Agent -ActionAccount (Get-Credential)
+        Write-Host "Attemping to remove SCOM agent on $Target..." -ForegroundColor Yellow -BackgroundColor Black
+        $Iteration++
+        $User = $Credentials.UserName
+        $Password = $Credentials.GetNetworkCredential().password
+        Start-Job -ScriptBlock{
+            $Target = $args[0]
+            $User = $args[1]
+            $Password = $args[2] | ConvertTo-SecureString -asPlainText -Force
+            $Credentials = New-Object System.Management.Automation.PSCredential($User,$Password)
+            $Agent = Get-SCOMAgent -DNSHostName "$Target"
+            Uninstall-SCOMAgent -Agent $Agent -ActionAccount $Credentials -PassThru #This removes the client, but doesn't return cleanly, hangs without error
+        } -ArgumentList $Target,$User,$Password -Name "AgentRemoval-$Iteration" | Out-Null
     }
+}
+
+$JobCount = (Get-Job -Name AgentRemoval*).Count
+if ($JobCount -gt 0)
+{
+    Write-Host "The SCOM agent removals should be in-progress now.  Sleeping for 3 minutes to allow the uninstallations to complete." -ForegroundColor Green
+    Start-Sleep -Seconds 180
+    Get-Job -Name AgentRemoval* | Receive-Job
+    Get-Job -Name AgentRemoval* | Remove-Job -Force
+}
+else {Write-Host "No SCOM agents were detected." -ForegroundColor Green}
 
 }
 
@@ -353,19 +388,21 @@ function Remove-MachineSingle {
 <# 
 
 .SYNOPSIS
-    SCOM Admin Tool RemoveMachineSingle
+    SCOM Admin Tool for CE/PA Usage
+    RemoveMachineSingle
 
 .DESCRIPTION
     Usage:  Use for managing any SCOM instance you have access to as runas.
     Removes a single machine from Instance
-    Runs from Elevated Operations Manager Shell
+    Runs from Elevated Powershell
+    Uses JIT Elevated credentials for functionality.
     Can be configured by user choices to change settings.
 
 .Example
     Help RemoveMachineSingle
     RemoveMachineSingle self contained function
 .Notes
-    Author: J.M. Wells 
+    Author: J.Wells (Design Laboratory Inc)
     Date: October 03, 2019
 
     Ver 1.0 - Basic functionality
@@ -381,16 +418,48 @@ Param(
 #Remove Machine from SCOM Instance.  Uses FQDN to remove machine.  Requires runas credentials.
 
 
-    $Name = ( ($defaultValue='Test.redmond.corp.microsoft.com'), (Read-Host "Input Machine Name [$defaultValue]")) -match '\S' | select -last 1
+$Path = ( ($defaultValue='Test.redmond.corp.microsoft.com'), (Read-Host "Input Machine Name [$defaultValue]")) -match '\S' | select -last 1
+$Credentials = Get-Credential -Message "Please enter credentials for SCOM interaction"
+$Count = 0
+$Iteration = 0
 
+While ($Count -eq 0)
 
-     $Agent = Get-SCOMAgent -DNSHostName "$Name"
+{
 
-
-        Uninstall-SCOMAgent -Agent $Agent -ActionAccount (Get-Credential)
-
+Write-Host "Attempting to detect SCOM agent on $Path..." -ForegroundColor Yellow -BackgroundColor Black
+    $Count++
+    $Agent = $null
+    $Agent = Get-SCOMAgent -DNSHostName "$Path" # This returns null when there is no client detected
 }
 
+if ($null -ne $Agent)
+    {
+        Write-Host "Attemping to remove SCOM agent on $Path..." -ForegroundColor Yellow -BackgroundColor Black
+        $Iteration++
+        $User = $Credentials.UserName
+        $Password = $Credentials.GetNetworkCredential().password
+        Start-Job -ScriptBlock{
+            $Path = $args[0]
+            $User = $args[1]
+            $Password = $args[2] | ConvertTo-SecureString -asPlainText -Force
+            $Credentials = New-Object System.Management.Automation.PSCredential($User,$Password)
+            $Agent = Get-SCOMAgent -DNSHostName "$Path"
+            Uninstall-SCOMAgent -Agent $Agent -ActionAccount $Credentials -PassThru #This removes the client, but doesn't return cleanly, hangs without error
+        } -ArgumentList $Path,$User,$Password -Name "AgentRemoval-$Iteration" | Out-Null
+    }
+
+$JobCount = (Get-Job -Name AgentRemoval*).Count
+if ($JobCount -gt 0)
+{
+    Write-Host "The SCOM agent removal should be in-progress now.  Sleeping for 3 minutes to allow the uninstallation to complete." -ForegroundColor Green
+    Start-Sleep -Seconds 180
+    Get-Job -Name AgentRemoval* | Receive-Job
+    Get-Job -Name AgentRemoval* | Remove-Job -Force
+}
+else {Write-Host "No SCOM agent was detected." -ForegroundColor Green}
+
+}
 
 #####
 #####
@@ -401,19 +470,21 @@ function Set-MaintenanceModeBulk {
 <# 
 
 .SYNOPSIS
-    SCOM Admin Tool Set-MaintenanceModeBulk
+    SCOM Admin Tool for CE/PA Usage
+    Set-MaintenanceModeBulk
 
 .DESCRIPTION
     Usage:  Use for managing any SCOM instance you have access to as runas.
     Puts machines into Maintenance Mode in bulk batches using TXT file.
-    Runs from Elevated Operations Manager Shell
+    Runs from Elevated Powershell
+    Uses JIT Elevated credentials for functionality.
     Can be configured by user choices to change settings.
 
 .Example
     Help Set-MaintenanceModeBulk
     Set-MaintenanceModeBulk self contained function
 .Notes
-    Author: J.M. Wells 
+    Author: J.Wells (Design Laboratory Inc)
     Date: October 03, 2019
 
     Ver 1.0 - Basic functionality
@@ -439,7 +510,9 @@ ForEach ($server in $servers) {
 
 $Instance = Get-SCOMClassInstance -Name $servers
 $Time = ((Get-Date).AddMinutes($minutes))
-Start-SCOMMaintenanceMode -Instance $Instance -EndTime $Time -Reason "$Reason" -Comment "$Comment"
+
+Write-Host "Setting Machines in Maintenance Mode..." -ForegroundColor Yellow -BackgroundColor Black
+Start-SCOMMaintenanceMode -Instance $Instance -EndTime $Time -Reason "$Reason" -Comment "$Comment" -Verbose
 
 }
 
@@ -456,20 +529,20 @@ function Set-MaintenanceModeSingle {
 <# 
 
 .SYNOPSIS
-    SCOM Admin Tool Set-MaintenanceModeSingle
+    SCOM Admin Tool for CE/PA Usage
+    Set-MaintenanceModeSingle
 
 .DESCRIPTION
     Usage:  Use for managing any SCOM instance you have access to as runas.
     Puts a single machine into Maintenance Mode
-    Runs from Elevated Operations Manager Shell
+    Runs from Elevated Powershell
+    Uses JIT Elevated credentials for functionality.
     Can be configured by user choices to change settings.
 
 .Example
     Help Set-MaintenanceModeSingle
     Set-MaintenanceModeSingle self contained function
-    
- .Notes   
-    Author: J.M. Wells 
+    Author: J.Wells (Design Laboratory Inc)
     Date: October 03, 2019
 
     Ver 1.0 - Basic functionality
@@ -490,9 +563,11 @@ $Reason = ( ($defaultValue='SecurityIssue'), (Read-Host "Input Reason for Mainte
 $Comment = ( ($defaultValue='Applying Software Updates.'), (Read-Host "Input Comment for Maintenance Window [$defaultValue]")) -match '\S' | select -last 1
 $ServerName = ( ($defaultValue='Test.redmond.corp.microsoft.com'), (Read-Host "Input Machine Name [$defaultValue]")) -match '\S' | select -last 1
 
-Start-SCOMMaintenanceMode -Instance $ServerName -EndTime $Time -Reason "$Reason" -Comment "$Comment"
+    Write-Host "Setting Machine in Maintenance Mode..." -ForegroundColor Yellow -BackgroundColor Black
+    Start-SCOMMaintenanceMode -Instance $ServerName -EndTime $Time -Reason "$Reason" -Comment "$Comment" -Verbose
 
 }
+
 
 
 #####
@@ -506,19 +581,21 @@ function Show-MaintenanceMode {
 <# 
 
 .SYNOPSIS
-    SCOM Admin Tool Show-MaintenanceMode
+    SCOM Admin Tool for CE/PA Usage
+    Show-MaintenanceMode
 
 .DESCRIPTION
     Usage:  Use for managing any SCOM instance you have access to as runas.
     Lists All machines in Maintenance Mode
-    Runs from Elevated Operations Manager Shell
+    Runs from Elevated Powershell
+    Uses JIT Elevated credentials for functionality.
     Can be configured by user choices to change settings.
 
 .Example
     Help Show-MaintenanceMode
     Show-MaintenanceMode self contained function
 .Notes
-    Author: J.M. Wells
+    Author: J.Wells (Design Laboratory Inc)
     Date: October 03, 2019
 
     Ver 1.0 - Basic functionality
@@ -534,6 +611,9 @@ Param(
 
 ##Gets machines in MM
 
-Get-SCOMMonitoringObject | where-object {$_.InMaintenanceMode -eq $true}
+    Write-Host "Looking for Machines in Maintenance Mode..." -ForegroundColor Yellow -BackgroundColor Black
+    Get-SCOMMonitoringObject | where-object {$_.InMaintenanceMode -eq $true} -Verbose
 
 }
+
+

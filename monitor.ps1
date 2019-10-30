@@ -35,7 +35,7 @@ $Computer = $env:computername
 ########################################################################
 
 #Error Array
-[array]$ErrorArray = @("12","41","1001","1074","1076","6005","6006","6008","6009","7036")
+[array]$ErrorArray = @("12","41","1001","1074","1076","6005","6006","6008","6009")
 
 foreach ($element in $ErrorArray) 
 {
@@ -84,7 +84,7 @@ Foreach ($Alert in $Alerts){
 }
 
 ######################End Send-Mail Customer########################################
-Start-Sleep [60]
+
 ######################Send-Mail OPS################################################
 $EmailBody2 = @"
     
@@ -104,9 +104,9 @@ $EmailBody2 = @"
 
 "@
 
-Send-MailMessage -to tktcefun@microsoft.com  -subject "Reboot Alert for $Computer, $Date" -BodyAsHtml -Body $EmailBody2 -Priority High -Attachement "C:\Events.csv" -SmtpServer $ExchangeServer -Port 25 -From $FromAddress
+Send-MailMessage -to tktcefun@microsoft.com  -subject "Reboot Alert for $Computer, $Date" -BodyAsHtml -Body $EmailBody2 -Priority High -SmtpServer $ExchangeServer -Port 25 -From $FromAddress
 
-Start-Sleep [60]
+
 
 remove-item -path C:\Events.csv -force -ErrorAction SilentlyContinue
 
