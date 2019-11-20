@@ -11,8 +11,9 @@
     USE FQDN of Machine unless otherwise stated!!
 
     Commands:
-    
+
     Get-Info
+    Get-MachineList    
     Get-AlertsBulk
     Get-AlertSingle
     Clear-AlertBulk
@@ -27,7 +28,7 @@
 
 
 
-function Get-Info {
+function Get-MachineList {
 
 <# 
 
@@ -47,6 +48,48 @@ function Get-Info {
 .Notes
     Author: J.Wells (Design Laboratory Inc)
     Date: October 03, 2019
+
+    Ver 1.0 - Basic functionality
+    Ver 1.1 - Added Info and Info Function 10/4/19
+    Ver 1.2 - Added Help option to each function 10/7/19
+    Ver 1.3 - Spell checking and clean up of function names 
+    Ver 1.4 - Finalized Help options and information 10/8/19
+
+#>
+
+#Invoke Help file
+Param(
+    [String]$Targets = "Help"  #The targets to run.
+)
+
+    $Output = ( ($defaultValue='C:\AllSCOMMachines.txt'), (Read-Host "Input path and name [$defaultValue]")) -match '\S' | select -last 1
+
+    Get-SCOMGroup -DisplayName “All Windows Computers” | Get-SCOMClassInstance -Verbose | sort DisplayName | FT DisplayName | Out-File -FilePath $Output 
+
+}
+
+
+
+function Get-Info {
+
+<# 
+
+.SYNOPSIS
+    SCOM Admin Tool for CE/PA Usage
+    SCOM Admin Tool Info/Help File
+.DESCRIPTION
+    Usage:  Use for managing any SCOM instance you have access to as runas.
+    Gives a list of all functions in module
+    Runs from Elevated Powershell
+    Uses JIT Elevated credentials for functionality.
+    Can be configured by user choices to change settings.
+
+.Example
+    Help Get-MachineList
+    Get-MachineList  Self contained function
+.Notes
+    Author: J.Wells (Design Laboratory Inc)
+    Date: November 06, 2019
 
     Ver 1.0 - Basic functionality
     Ver 1.1 - Added Info and Info Function 10/4/19
@@ -82,6 +125,8 @@ Param(
 "@ -ForegroundColor Yellow -BackgroundColor Black
 
 }
+
+
 
 
 
@@ -138,7 +183,7 @@ Param(
 
   ##Get Alerts from last X days
 
-  Get-SCOMAlert -Criteria "ResolutionState$ResOp'$Resolution' AND Severity$SevOp'$Severity' AND Priority$PriOp'$Priority' AND TimeRaised> '$((get-date).adddays(-$TimeFrame))'" | Sort TimeRaised -Descending| Select TimeRaised, MonitoringObjectPath, MonitoringObjectDisplayName, MonitoringObjectID, name, severity, priority, ResolutionState, RepeatCount, Owner
+  Get-SCOMAlert -Criteria "ResolutionState$ResOp'$Resolution' AND Severity$SevOp'$Severity' AND Priority$PriOp'$Priority' AND TimeRaised> '$((get-date).adddays(-$TimeFrame))'" | Sort TimeRaised -Descending| Select TimeRaised, MonitoringObjectPath, MonitoringObjectDisplayName, MonitoringObjectID, name, severity, priority, ResolutionState, RepeatCount, Owner -Verbose
 
 }
 
@@ -191,7 +236,7 @@ Param(
     ##Gets All alerts for Single Machine using FQDN
 
      
-              Get-SCOMAlert -criteria "MonitoringObjectDisplayName = '$CompName'" | Sort TimeRaised -Descending| Select TimeRaised, MonitoringObjectPath, MonitoringObjectDisplayName, MonitoringObjectID, name, severity, priority, ResolutionState, RepeatCount, Owner
+              Get-SCOMAlert -criteria "MonitoringObjectDisplayName = '$CompName'" | Sort TimeRaised -Descending| Select TimeRaised, MonitoringObjectPath, MonitoringObjectDisplayName, MonitoringObjectID, name, severity, priority, ResolutionState, RepeatCount, Owner -Verbose
 }
 
 
@@ -500,19 +545,19 @@ Param(
 
 
 $Path = ( ($defaultValue='C:\Computers.txt'), (Read-Host "Input Path and File Name [$defaultValue]")) -match '\S' | select -last 1
-$servers = Get-Content  -path "$Path"
 $minutes = ( ($defaultValue=15), (Read-Host "Input Length of maintenance window desired [$defaultValue]")) -match '\S' | select -last 1
 $Reason = ( ($defaultValue='SecurityIssue'), (Read-Host "Input Reason for Maintenance Window [$defaultValue]")) -match '\S' | select -last 1
-$Comment = ( ($defaultValue='Applying Software Updates.'), (Read-Host "Input Comment for Maintenance Window [$defaultValue]")) -match '\S' | select -last 1
 
+$servers = Get-Content  -path $Path
 
 ForEach ($server in $servers) {
 
-$Instance = Get-SCOMClassInstance -Name $servers
+$Instance = (Get-SCOMClass -DisplayName "Windows Computer" | Get-SCOMClassInstance | ?{$_.DisplayName -eq "$Server"})
 $Time = ((Get-Date).AddMinutes($minutes))
 
 Write-Host "Setting Machines in Maintenance Mode..." -ForegroundColor Yellow -BackgroundColor Black
-Start-SCOMMaintenanceMode -Instance $Instance -EndTime $Time -Reason "$Reason" -Comment "$Comment" -Verbose
+      Start-SCOMMaintenanceMode -Instance $Instance -EndTime $Time -Reason $Reason -Verbose
+                    
 
 }
 
@@ -558,13 +603,15 @@ Param(
 
 
 #Set one machine to maintenance mode
-$minutes = ( ($defaultValue=15), (Read-Host "Input Length of maintenance window desired [$defaultValue]")) -match '\S' | select -last 1
+$minutes = ( ($defaultValue="15"), (Read-Host "Input Length of maintenance window desired [$defaultValue]")) -match '\S' | select -last 1
 $Reason = ( ($defaultValue='SecurityIssue'), (Read-Host "Input Reason for Maintenance Window [$defaultValue]")) -match '\S' | select -last 1
 $Comment = ( ($defaultValue='Applying Software Updates.'), (Read-Host "Input Comment for Maintenance Window [$defaultValue]")) -match '\S' | select -last 1
 $ServerName = ( ($defaultValue='Test.redmond.corp.microsoft.com'), (Read-Host "Input Machine Name [$defaultValue]")) -match '\S' | select -last 1
 
     Write-Host "Setting Machine in Maintenance Mode..." -ForegroundColor Yellow -BackgroundColor Black
-    Start-SCOMMaintenanceMode -Instance $ServerName -EndTime $Time -Reason "$Reason" -Comment "$Comment" -Verbose
+    $Instance = Get-SCOMClassInstance -Name "$ServerName"
+    $Time = ((Get-Date).AddMinutes($minutes))
+    Start-SCOMMaintenanceMode -Instance $Instance -EndTime $Time -Reason "$Reason" -Comment "$Comment" -Verbose
 
 }
 
